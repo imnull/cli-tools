@@ -2,9 +2,10 @@
   "name": "@imnull/cli-table",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "./dist/index.js",
   "scripts": {
-    "test": "ts-node ./test.ts"
+    "test": "ts-node ./test.ts",
+    "build": "tsc ./src/index --outDir dist -d -m commonjs -t es2017"
   },
   "keywords": [],
   "author": "",
@@ -15,5 +16,8 @@
   "devDependencies": {
     "ts-node": "^10.9.2",
     "typescript": "^5.5.4"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
