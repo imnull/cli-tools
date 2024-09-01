@@ -1,0 +1,21 @@
+{
+  "name": "@imnull/term-flash",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./dist/ßindex.js",
+  "scripts": {
+    "test": "ts-node test.ts",
+    "build": "tsc ./src/index --outDir dist -d -m commonjs -t es5"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^22.5.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

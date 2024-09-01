@@ -1,6 +1,7 @@
 import { BG_COLORS, COLORS, RESET, STYLES, TBackgroundColors, TColors, TOptions } from "./config";
 
-export type TColorNames = keyof typeof COLORS
+export { TColors }
+export type TColorNames = TColors
 export type TStyleNames = 'none' | keyof typeof STYLES
 export type TBackgroundColorNames = keyof typeof BG_COLORS
 
@@ -16,6 +17,8 @@ export const parseStyle = (style: TStyleNames | TStyleNames[]) => {
 export const Colors = { ...COLORS }
 
 export const BackgroundColors = { ...BG_COLORS }
+
+export const Styles = { ...STYLES }
 
 export const colors = {
     use: (msg: string, colorName: TColors = 'white', options: TOptions = {}) => {
