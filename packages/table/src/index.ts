@@ -1,5 +1,6 @@
 import { TColorNames, TStyleNames, colors, parseStyle } from '@imnull/cli-color'
 import { TABLE_CHARS } from './config'
+import { repeat, padEnd, padStart, genArr } from './helper'
 
 type TTableData = unknown[][]
 type TAlign = 'left' | 'right' | 'center'
@@ -27,7 +28,7 @@ const DEFAULT_BORDER_COLOR: TColorNames = 'brightBlack'
 const isEmptyData = (v: unknown) => typeof v === 'undefined'
 
 const paddingContent = (content: unknown, padding: number, color: TColorNames, style: TStyleNames | TStyleNames[], padChar = ' ') => {
-    return colors.use(`${padChar.repeat(padding)}${content}${padChar.repeat(padding)}`, color, parseStyle(style))
+    return colors.use(`${repeat(padChar, padding)}${content}${repeat(padChar, padding)}`, color, parseStyle(style))
 }
 
 const cell = (data: unknown, index: number, row: unknown[], size: number, options: TRenderOptions) => {
@@ -43,16 +44,16 @@ const cell = (data: unknown, index: number, row: unknown[], size: number, option
     const _style = typeof style === 'function' ? style(data, index, row) : style
     const _align = typeof align === 'function' ? align(data, index, row) : align
     switch (_align) {
-        case 'right': return paddingContent(s.padStart(size, padChar), padding, _color, _style)
+        case 'right': return paddingContent(padStart(s, size, padChar), padding, _color, _style)
         case 'center': {
             const gap = size - s.length
             const left = gap / 2 >> 0
             const right = gap - left
-            return paddingContent(`${padChar.repeat(left)}${s}${padChar.repeat(right)}`, padding, _color, _style)
+            return paddingContent(`${repeat(padChar, left)}${s}${repeat(padChar, right)}`, padding, _color, _style)
         }
         default:
         case 'left':
-            return paddingContent(s.padEnd(size, padChar), padding, _color, _style)
+            return paddingContent(padEnd(s, size, padChar), padding, _color, _style)
     }
 }
 
@@ -66,7 +67,7 @@ const calWidth = (cell: unknown) => {
     } else if(typeof cell === 'string') {
         return cell.length
     } else {
-        return `${cell}`
+        return `${cell}`.length
     }
 }
 
@@ -80,7 +81,7 @@ const scanTableColumns = (_data: TTableData, head?: string[]) => {
         data.push(head)
     }
     const columnCount = calColumnCount(data)
-    const columnWidth = Array(columnCount).fill(0).map((v, i) => v + calColumnWidth(data, i))
+    const columnWidth = genArr(columnCount, 0).map((v, i) => v + calColumnWidth(data, i))
     return {
         count: columnCount,
         size: columnWidth,
@@ -103,7 +104,7 @@ const renderRowBorder = (size: number[], L: string, C: string, R: string, option
     const _color = typeof color === 'function' ? DEFAULT_BORDER_COLOR : color
     return colors.use([
         L,
-        size.map(v => TABLE_CHARS.H.repeat(v + pad)).join(C),
+        size.map(v => repeat(TABLE_CHARS.H, v + pad)).join(C),
         R,
     ].join(''), _color)
 }
