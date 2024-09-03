@@ -1,0 +1,24 @@
+{
+  "name": "@imnull/datetime",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./dist/index.js",
+  "scripts": {
+    "test": "ts-node test.ts",
+    "build": "tsc ./src/index --outDir dist -d -m commonjs -t es5"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "@imnull/cli-color": "*",
+    "@imnull/es5-string": "*"
+  }
+}
