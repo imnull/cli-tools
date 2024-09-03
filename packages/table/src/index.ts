@@ -1,74 +1,15 @@
 import { TColorNames, TStyleNames, colors, parseStyle } from '@imnull/cli-color'
 import { TABLE_CHARS } from './config'
 import { repeat, padEnd, padStart, genArr } from './helper'
-
-type TTableData = unknown[][]
-type TAlign = 'left' | 'right' | 'center'
-
-type TRenderOptions = {
-    padding?: number;
-    padChar?: string;
-    align?: TAlign | ((val: unknown, index: number, row: unknown[]) => TAlign);
-    color?: TColorNames | ((val: unknown, index: number, row: unknown[]) => TColorNames);
-    style?: TStyleNames | TStyleNames[] | ((val: unknown, index: number, row: unknown[]) => TStyleNames | TStyleNames[]);
-}
-
-type TRenderTableOptions = TRenderOptions & {
-    borderColor?: TColorNames;
-    head?: string[];
-    headAlign?: TAlign;
-    headColor?: TColorNames;
-    headStyle?: TStyleNames | TStyleNames[];
-}
+import { isEmptyData, calWidth } from './utils'
+import { Cell, TTableData, TRenderOptions, TRenderTableOptions } from './cell'
 
 const BREAK_LINE = '\n'
 const DEFAULT_COLOR: TColorNames = 'none'
 const DEFAULT_BORDER_COLOR: TColorNames = 'brightBlack'
 
-const isEmptyData = (v: unknown) => typeof v === 'undefined'
-
-const paddingContent = (content: unknown, padding: number, color: TColorNames, style: TStyleNames | TStyleNames[], padChar = ' ') => {
-    return colors.use(`${repeat(padChar, padding)}${content}${repeat(padChar, padding)}`, color, parseStyle(style))
-}
-
-const cell = (data: unknown, index: number, row: unknown[], size: number, options: TRenderOptions) => {
-    const {
-        padding = 1,
-        padChar = ' ',
-        align = 'left',
-        color = DEFAULT_COLOR,
-        style = 'none'
-    } = options
-    const s = isEmptyData(data) ? '' : `${data}`
-    const _color = typeof color === 'function' ? color(data, index, row) : color
-    const _style = typeof style === 'function' ? style(data, index, row) : style
-    const _align = typeof align === 'function' ? align(data, index, row) : align
-    switch (_align) {
-        case 'right': return paddingContent(padStart(s, size, padChar), padding, _color, _style)
-        case 'center': {
-            const gap = size - s.length
-            const left = gap / 2 >> 0
-            const right = gap - left
-            return paddingContent(`${repeat(padChar, left)}${s}${repeat(padChar, right)}`, padding, _color, _style)
-        }
-        default:
-        case 'left':
-            return paddingContent(padEnd(s, size, padChar), padding, _color, _style)
-    }
-}
-
 const calColumnCount = (data: TTableData) => {
     return data.map(r => r.length).reduce((r, v) => r > v ? r : v, 0)
-}
-
-const calWidth = (cell: unknown) => {
-    if(isEmptyData(cell)) {
-        return 0
-    } else if(typeof cell === 'string') {
-        return cell.length
-    } else {
-        return `${cell}`.length
-    }
 }
 
 const calColumnWidth = (data: TTableData, index: number) => {
@@ -119,10 +60,10 @@ const renderInnerLine = (size: number[], options: TRenderOptions) => {
     return renderRowBorder(size, TABLE_CHARS.LM, TABLE_CHARS.CM, TABLE_CHARS.RM, options)
 }
 
-const renderRow = (row: unknown[], count: number, size: number[], B: string, renderBorder: boolean, options: TRenderOptions, lineOptions: TRenderOptions) => {
+const renderRow = (row: Cell[], size: number[], B: string, renderBorder: boolean, lineOptions: TRenderOptions) => {
     let result = [
         B,
-        fixRow(row, count).map((v, i) => cell(v, i, row, size[i], options)).join(B),
+        row.map((v, i) => v.render(size[i])).join(B),
         B,
     ].join('')
     if(renderBorder) {
@@ -132,29 +73,48 @@ const renderRow = (row: unknown[], count: number, size: number[], B: string, ren
 }
 
 const renderHead = (head: string[], count: number, size: number[], B: string, options: TRenderOptions) => {
+    const _head = fixRow(head, count).map((v, i) => new Cell(v, i, options))
     const result = [
         B,
-        fixRow(head, count).map((v, i) => cell(v, i, head, size[i], options)).join(B),
+        _head.map((v, i) => v.render(size[i])).join(B),
         B,
     ].join('')
     return result
 }
 
-export const renderTable = (data: TTableData, options: TRenderTableOptions = {}) => {
+const formatTable = (data: TTableData, width: number, options: TRenderOptions) => {
+    return data.map((row, I) => {
+        const cells: Cell[] = []
+        for(let i = 0; i < width; i++) {
+            const val = isEmptyData(row[i]) ? '' : row[i]
+            cells.push(new Cell(val, i, options))
+        }
+        return cells
+    })
+}
+
+export const renderTable = (rawData: TTableData, options: TRenderTableOptions = {}) => {
     const {
-        borderColor = DEFAULT_BORDER_COLOR,
         head,
+        style = 'none',
+        align = 'left',
+        cell,
+        color = DEFAULT_COLOR,
+        borderColor = DEFAULT_BORDER_COLOR,
         headAlign = 'center',
         headColor = 'brightWhite',
         headStyle = 'bold',
+        ...rest
     } = options
-    const lineOptions = { ...options, colors: borderColor }
-    const headOptions = { ...options, align: headAlign, color: headColor, style: headStyle }
-    const { count, size } = scanTableColumns(data, head)
+    const { count, size } = scanTableColumns(rawData, head)
+    const rowOptions = { ...rest, color, style, align, cell }
+    const lineOptions = { ...rest, colors: borderColor }
+    const headOptions = { ...rest, align: headAlign, color: headColor, style: headStyle }
     const B = colors.use(TABLE_CHARS.V, borderColor)
-    const rows = data.map((row, idx) => {
-        return renderRow(row, count, size, B, idx > 0, options, lineOptions)
-    })
+
+    const data = formatTable(rawData, count, rowOptions)
+
+    const rows = data.map((row, idx) => renderRow(row, size, B, idx > 0, lineOptions))
     const fin = [
         ...rows,
         renderBottomLine(size, lineOptions),

@@ -30,17 +30,18 @@ Jerry\t2024-08-22\tS\t2024-08-22 20:08:00\t2.1
 
 
 console.log(renderTable(DEMO, {
-    align: (val, i) => {
+    head: ['昵称', '[[[ 日 期 ]]]', 'status', 'time', 'delay time (hour)'],
+    align: (cell, i) => {
         if(i == 2) {
-            return val === 'E' ? 'right' : 'left'
+            return cell.valueOf() === 'E' ? 'right' : 'left'
         } else if(i == 4) {
-            return Number(val) < 2 ? 'right' : 'left'
+            return Number(cell.valueOf()) < 2 ? 'right' : 'left'
         }
         return 'center'
     },
-    head: ['name', 'date', 'status', 'time', 'delay time (hour)'],
-    color: (val, i) => {
+    color: (cell, i) => {
         if(i == 0) {
+            const val = cell.valueOf()
             if(val === 'Bob') {
                 return 'brightRed'
             } else if(val === 'Tom' || val === 'Jerry') {
@@ -49,18 +50,24 @@ console.log(renderTable(DEMO, {
                 return 'green'
             }
         } else if(i == 2) {
-            return val == 'E' ? 'red' : 'green'
+            return cell.valueOf() == 'E' ? 'red' : 'green'
         } else if(i == 4) {
-            return Number(val) > 3 ? 'brightGreen' : Number(val) < 2 ? 'yellow' : 'green'
+            return Number(cell.valueOf()) > 3 ? 'brightGreen' : Number(cell.valueOf()) < 2 ? 'yellow' : 'green'
         }
         return 'brightBlack'
     },
-    style: (val, i) => {
+    style: (cell, i) => {
         if(i == 3) {
             return 'italic'
         } else if(i == 4) {
-            return Number(val) > 3 ? ['bold'] : Number(val) < 2 ? ['blink'] : 'none'
+            return Number(cell.valueOf()) > 3 ? ['bold'] : Number(cell.valueOf()) < 2 ? ['blink'] : 'none'
         }
         return 'none'
     },
+    cell: (val, i) => {
+        if(i === 2) {
+            return val === 'S' ? '●' : '○'
+        }
+        return val
+    }
 }))

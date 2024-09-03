@@ -1,3 +1,5 @@
+import { calWidth } from './utils'
+
 export const trim = (s: string) => s.replace(/^\s+|\s+$/g, '')
 
 export const genArr = <T = unknown>(n: number, v: T) => {
@@ -16,10 +18,10 @@ export const repeat = (s: string, c: number) => {
 }
 
 export const padStart = (s: string, len: number, char = ' ') => {
-    return len > s.length ? repeat(char, len - s.length) + s : s
+    return len > calWidth(s) ? repeat(char, len - calWidth(s)) + s : s
 }
 
 export const padEnd = (s: string, len: number, char = ' ') => {
-    return len > s.length ? s + repeat(char, len - s.length) : s
+    return len > calWidth(s) ? s + repeat(char, len - calWidth(s)) : s
 }
 

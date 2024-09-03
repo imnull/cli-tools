@@ -1,11 +1,11 @@
 {
   "name": "@imnull/cli-table",
-  "version": "1.0.2",
+  "version": "2.0.0",
   "description": "",
   "main": "./dist/index.js",
   "scripts": {
     "test": "ts-node ./test.ts",
-    "build": "tsc ./src/index --outDir dist -d -m commonjs -t es5"
+    "build": "tsc ./src/index --outDir dist -d -m commonjs -t es6"
   },
   "files": [
     "dist",
