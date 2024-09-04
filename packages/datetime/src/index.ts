@@ -59,8 +59,7 @@ const resolveDot = (n: number, dot: number) => {
     return n
 }
 
-export const duration = (date: Date, unit: TTimeUnit = 'day', dot: number = 0) => {
-    const ms = date.getTime()
+export const duration = (ms: number, unit: TTimeUnit = 'day', dot: number = 0) => {
     if(unit === 'ms') {
         return ms
     }
@@ -68,7 +67,7 @@ export const duration = (date: Date, unit: TTimeUnit = 'day', dot: number = 0) =
 }
 
 export const diff = (a: Date, b: Date, unit: TTimeUnit = 'ms', dot: number = 0) => {
-    return resolveDot(duration(a, unit, -1) - duration(b, unit, -1), dot)
+    return resolveDot(duration(a.getTime(), unit, -1) - duration(b.getTime(), unit, -1), dot)
 }
 
 export const timespan = (ms: number): [number, number, number, number, number] => {
