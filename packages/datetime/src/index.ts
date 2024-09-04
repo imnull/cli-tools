@@ -1,5 +1,9 @@
 import { padStart } from '@imnull/es5-string'
-import { L, R, TDateLike, TTimeUnit, UNIT_MAP, MINUTE, HOUR, DAY, CN_WEEKNAMES, SECOND, MS } from './config'
+import { L, R, TDateLike, TTimeUnit, UNIT_MAP, MINUTE, HOUR, DAY, CN_WEEKNAMES, SECOND } from './config'
+
+export { DAY, HOUR, MINUTE, SECOND }
+
+export const getUnit = (u: TTimeUnit) => UNIT_MAP[u]
 
 export const parseDate = (d: TDateLike) => {
     if (d instanceof Date) {
@@ -107,8 +111,8 @@ export const addTime = (d: Date, offset: number, type: TTimeUnit) => {
     return d
 }
 
-export const getCnWeekDay = (date: Date) => {
-    return CN_WEEKNAMES[date.getDay()] || ''
+export const getCnWeekDay = (date: Date, names: string[] = CN_WEEKNAMES) => {
+    return names[date.getDay()] || ''
 }
 
 export class Timespan {
