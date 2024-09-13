@@ -1,7 +1,7 @@
 import { padStart } from '@imnull/es5-string'
 import { L, R, TDateLike, TTimeUnit, UNIT_MAP, MINUTE, HOUR, DAY, CN_WEEKNAMES, SECOND } from './config'
 
-export { DAY, HOUR, MINUTE, SECOND }
+export { TDateLike, TTimeUnit, DAY, HOUR, MINUTE, SECOND }
 
 export const getUnit = (u: TTimeUnit) => UNIT_MAP[u]
 
@@ -109,6 +109,14 @@ export const addTime = (d: Date, offset: number, type: TTimeUnit) => {
     const ms = d.getTime(), add = UNIT_MAP[type] * offset >> 0
     d.setTime(ms + add)
     return d
+}
+
+export const getMonthNumber = (date: Date = new Date()) => {
+    return date.getFullYear() * 100 + date.getMonth() + 1
+}
+
+export const getDateNumber = (date: Date = new Date()) => {
+    return getMonthNumber(date) * 100 + date.getDate()
 }
 
 export const getCnWeekDay = (date: Date, names: string[] = CN_WEEKNAMES) => {

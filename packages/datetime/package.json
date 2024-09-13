@@ -1,6 +1,6 @@
 {
   "name": "@imnull/datetime",
-  "version": "1.0.3",
+  "version": "1.0.6",
   "description": "",
   "main": "./dist/index.js",
   "scripts": {
@@ -22,7 +22,6 @@
     "typescript": "^5.5.4"
   },
   "dependencies": {
-    "@imnull/cli-color": "*",
     "@imnull/es5-string": "*"
   }
 }
