@@ -1,12 +1,12 @@
 import { parseSync, traverse, types } from '@babel/core'
 import { createQueryDepends, createQueryDependsMap } from './utils'
 
+const presetTypescript = require('@babel/preset-typescript')
+
 const readFileAst = (code: string, filename: string): types.File => {
     const ast = parseSync(code, {
         filename,
-        presets: [
-            '@babel/preset-typescript'
-        ]
+        presets: [presetTypescript]
     })
     if (!ast) {
         throw new Error(`Unknown error: AST is null`)
