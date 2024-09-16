@@ -1,6 +1,6 @@
 {
   "name": "@imnull/ast-query",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "",
   "main": "./dist/index.js",
   "types": "./ts-dist/index.d.ts",
@@ -12,7 +12,7 @@
     "prebuild": "npm run build:dec && npm run build:cli"
   },
   "bin": {
-    "mpchk": "./dist/cli-mpchk.js"
+    "mpchk": "./cli/cli-mpchk.js"
   },
   "keywords": [],
   "author": "",
