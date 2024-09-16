@@ -13,11 +13,14 @@ const useAlias = (router: string, map: Record<string, string>) => {
 export const resolveAlias = (router: string, map: Record<string, string>) => {
     const alias = Object.keys(map).find(a => router.startsWith(a))
     if(alias) {
-        let newPath = path.join(map[alias], router.substring(alias.length))
-        if(fs.existsSync(newPath) && fs.statSync(newPath).isDirectory()) {
-            newPath = path.join(newPath, 'index')
-        }
-        return newPath
+        router = path.join(map[alias], router.substring(alias.length))
+    }
+    return router
+}
+
+const resolveIndex = (router: string) => {
+    if(fs.existsSync(router) && fs.statSync(router).isDirectory()) {
+        router = path.join(router, 'index')
     }
     return router
 }
@@ -32,6 +35,7 @@ export const resolveDependRouter = (sourceFile: string, router: string, options:
 }
 
 const resolveExtension = (file: string, exts: string[]) => {
+    file = resolveIndex(file)
     if(!fs.existsSync(file) || !fs.statSync(file).isFile()) {
         const ext = exts.find(x => fs.existsSync(`${file}${x}`))
         if(ext) {
@@ -88,8 +92,9 @@ export const createQueryDepends = (queryRelations: (code: string, file: string) 
     }
 }
 
-type TDependItem = {
+export type TDependItem = {
     file: string;
+    exists: boolean;
     router: string;
     type: string;
     depends: TDependItem[]
@@ -99,8 +104,10 @@ const parseDependItem = (file: string, root: string): TDependItem => {
     let routerFile = path.relative(root, file)
     const type = path.extname(file)
     const router = routerFile.substring(0, routerFile.length - type.length)
+    const exists = fs.existsSync(file) && fs.statSync(file).isFile()
     return {
         file,
+        exists,
         router,
         type,
         depends: []
@@ -129,13 +136,119 @@ export const createQueryDependsMap = (queryRelations: (code: string, file: strin
         const files: string[] = []
         const file = resolveRouter(router, options)
         const { alias: { ['/']: root = '' } = {} } = options
-        const current = {
+        const current: TDependItem = {
             file: root,
+            exists: false,
             router: '/',
-            type: '',
+            type: 'root',
             depends: []
         }
         qd(file, options, files, current)
         return current
     }
+}
+
+/**
+ * 节点位置状态：
+ * - 0: 所在队列元素数多于1个，且本身位于第一；
+ * - 1: 所在队列元素数多于1个，且本身不是第一也不是最后；
+ * - 2: 所在队列元素数多于1个，且本身位于最后；
+ * - 3: 所在队列元素只有1个
+ */
+type TDependItemTraverseCallbackStatus = 0 | 1 | 2 | 3
+type TDependItemTraverseCallback = (item: TDependItem, depth: number, status: TDependItemTraverseCallbackStatus) => void
+
+const calTraverseStatus = (idx: number, len: number): TDependItemTraverseCallbackStatus => {
+    if(len <= 1) {
+        return 3
+    } else {
+        return idx >= len - 1 ? 2 : idx === 0 ? 0 : 1
+    }
+}
+
+const _traverse = (item: TDependItem, callback: TDependItemTraverseCallback, depth: number, status: TDependItemTraverseCallbackStatus) => {
+    callback(item, depth, status)
+    if(Array.isArray(item.depends) && item.depends.length > 0) {
+        const len = item.depends.length
+        item.depends.forEach((it, idx) => {
+            _traverse(it, callback, depth + 1, calTraverseStatus(idx, len))
+        })
+    }
+}
+
+export const traverse = (item: TDependItem, callback: TDependItemTraverseCallback) => {
+    if(item.type === 'root') {
+        if(Array.isArray(item.depends) && item.depends.length > 0) {
+            const len = item.depends.length
+            item.depends.forEach((it, idx) => {
+                _traverse(it, callback, 0, calTraverseStatus(idx, len))
+            })
+        }
+    } else {
+        _traverse(item, callback, 0, 3)
+    }
+}
+
+type TMinipProjectConfig = {
+    appid: string;
+    miniprogramRoot?: string;
+}
+
+export const getMinipProjectConfig = (rootDir: string): TMinipProjectConfig => {
+    const dir = path.resolve(process.cwd(), rootDir)
+    if(!fs.existsSync(dir)) {
+        throw new Error(`[getMinipProjectConfig] dir '${dir}' is not exists.`)
+    }
+    if(!fs.statSync(dir).isDirectory()) {
+        throw new Error(`[getMinipProjectConfig] dir '${dir}' is not a directory.`)
+    }
+    const projPath = path.join(dir, 'project.config.json')
+    if(!fs.existsSync(projPath) || !fs.statSync(projPath).isFile()) {
+        throw new Error(`[getMinipProjectConfig] config file '${projPath}' is not exists.`)
+    }
+
+    const code = fs.readFileSync(projPath, 'utf-8')
+    try {
+        const conf = JSON.parse(code)
+        return conf
+    } catch(err) {
+        throw new Error(`[getMinipProjectConfig] parse config file failed:\n${err}`)
+    }
+}
+
+type TMinipApp = {
+    pages: string[];
+    subPackages?: {
+        root: string;
+        pages: string[];
+    }[];
+    resolveAlias?: Record<string, string>;
+}
+
+export const getMinipAppConfig = (rootDir: string): { root: string; app: TMinipApp } => {
+    const { miniprogramRoot = '' } = getMinipProjectConfig(rootDir)
+    const dir = path.resolve(process.cwd(), rootDir)
+    const root = path.resolve(dir, miniprogramRoot)
+    const appFile = path.join(root, 'app.json')
+    if(!fs.existsSync(appFile) || !fs.statSync(appFile).isFile()) {
+        throw new Error(`[getMinipApp] app.json '${appFile}' is not exists.`)
+    }
+    const code = fs.readFileSync(appFile, 'utf-8')
+    try {
+        const app = JSON.parse(code)
+        return { root, app }
+    } catch(err) {
+        throw new Error(`[getMinipApp] parse app.json failed:\n${err}`)
+    }
+}
+
+export const parseMinipAppAlias = (rootDir: string) => {
+    const dir = path.resolve(process.cwd(), rootDir)
+    const appConfig = getMinipAppConfig(rootDir)
+    const { root, app: { resolveAlias = {} } } = appConfig
+    const alias: Record<string, string> = { '/': root }
+    Object.entries(resolveAlias).forEach(([key, val]) => {
+        alias[key.replace(/\*+$/, '')] = path.join(root, val.replace(/\*+$/, '').replace(/^\//, ''))
+    })
+    return alias
 }

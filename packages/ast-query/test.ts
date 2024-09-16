@@ -29,7 +29,7 @@ console.log(queryWxmlDepends(`/pages/index`, {
     extensions: ['.wxs', '.wxml']
 }))
 
-console.log(queryJsDependsMap(`/pages/logs/logs`, {
+console.log(JSON.stringify(queryJsDependsMap(`/pages/logs/logs`, {
     alias,
     extensions: ['.js', '.ts']
-}))
+}), null, '   '))

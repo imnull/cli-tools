@@ -1,4 +1,4 @@
-import { cleanUpSurroundPath, createQueryDepends } from './utils'
+import { cleanUpSurroundPath, createQueryDepends, createQueryDependsMap } from './utils'
 
 const queryRelations = (code: string): string[] => {
     const depends: string[] = []
@@ -10,3 +10,4 @@ const queryRelations = (code: string): string[] => {
 }
 
 export const queryDepends = createQueryDepends(queryRelations)
+export const queryDependsMap = createQueryDependsMap(queryRelations)

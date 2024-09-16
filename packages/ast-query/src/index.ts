@@ -1,4 +1,5 @@
 export { queryDepends as queryJsDepends, queryDependsMap as queryJsDependsMap } from './js'
-export { queryDepends as queryCssDepends } from './css'
-export { queryDepends as queryJsonDepends } from './json'
-export { queryDepends as queryWxmlDepends } from './wxml'
+export { queryDepends as queryCssDepends, queryDependsMap as queryCssDependsMap } from './css'
+export { queryDepends as queryJsonDepends, queryDependsMap as queryJsonDependsMap } from './json'
+export { queryDepends as queryWxmlDepends, queryDependsMap as queryWxmlDependsMap } from './wxml'
+export { traverse, TDependItem, getMinipAppConfig, getMinipProjectConfig, parseMinipAppAlias } from './utils'
