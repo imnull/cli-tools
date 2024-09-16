@@ -1,6 +1,6 @@
 {
   "name": "@imnull/ast-query",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "description": "",
   "main": "./dist/index.js",
   "types": "./ts-dist/index.d.ts",
@@ -14,6 +14,11 @@
   "bin": {
     "mpchk": "./cli/cli-mpchk.js"
   },
+  "files": [
+    "cli",
+    "ts-dist",
+    "dist"
+  ],
   "keywords": [],
   "author": "",
   "license": "ISC",
