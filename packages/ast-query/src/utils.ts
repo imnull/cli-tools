@@ -97,10 +97,11 @@ export type TDependItem = {
     exists: boolean;
     router: string;
     type: string;
-    depends: TDependItem[]
+    depends: TDependItem[];
+    getParent: () => TDependItem | null
 }
 
-const parseDependItem = (file: string, root: string): TDependItem => {
+const parseDependItem = (file: string, root: string, getParent: { (): TDependItem } | null = null): TDependItem => {
     let routerFile = path.relative(root, file)
     const type = path.extname(file)
     const router = routerFile.substring(0, routerFile.length - type.length)
@@ -110,7 +111,8 @@ const parseDependItem = (file: string, root: string): TDependItem => {
         exists,
         router,
         type,
-        depends: []
+        depends: [],
+        getParent: getParent ? getParent : () => null,
     }
 }
 
@@ -121,7 +123,8 @@ export const createQueryDependsMap = (queryRelations: (code: string, file: strin
         }
         result.push(file)
         const { alias: { ['/']: root = '' } = {} } = options
-        const item = parseDependItem(file, root)
+        const getParent = () => parent
+        const item = parseDependItem(file, root, getParent)
         parent.depends.push(item)
         const code = readCode(file)
         const depends = queryRelations(code, file)
@@ -141,7 +144,8 @@ export const createQueryDependsMap = (queryRelations: (code: string, file: strin
             exists: false,
             router: '/',
             type: 'root',
-            depends: []
+            depends: [],
+            getParent: () => null,
         }
         qd(file, options, files, current)
         return current

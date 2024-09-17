@@ -1,8 +1,8 @@
 {
   "name": "@imnull/term-flash",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "",
-  "main": "./dist/ßindex.js",
+  "main": "./dist/index.js",
   "scripts": {
     "test": "ts-node test.ts",
     "build": "tsc ./src/index --outDir dist -d -m commonjs -t es5"
